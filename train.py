@@ -1,14 +1,10 @@
 """
-DEIMv2: Real-Time Object Detection Meets DINOv3
-Copyright (c) 2025 The DEIMv2 Authors. All Rights Reserved.
+MFP-DETR for Power Defect Detection
+# Copyright (c) 2026 yc. All Rights Reserved.
 ---------------------------------------------------------------------------------
-DEIM: DETR with Improved Matching for Fast Convergence
-Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from RT-DETR (https://github.com/lyuwenyu/RT-DETR)
-Copyright (c) 2023 lyuwenyu. All Rights Reserved.
+Modified from DINOv3 (https://github.com/facebookresearch/dinov3)
+License: DINOv3 License Agreement
 """
-
 import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -42,10 +38,6 @@ def main(args, ) -> None:
         if k not in ['update', ] and v is not None})
 
     cfg = YAMLConfig(args.config, **update_dict)
-
-    if args.resume or args.tuning:
-        if 'HGNetv2' in cfg.yaml_cfg:
-            cfg.yaml_cfg['HGNetv2']['pretrained'] = False
 
     print('cfg: ', cfg.__dict__)
 

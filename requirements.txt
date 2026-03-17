@@ -6,3 +6,5 @@ tensorboard
 scipy
 calflops
 transformers
+matplotlib
+onnxruntime-gpu
