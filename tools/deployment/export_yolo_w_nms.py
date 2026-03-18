@@ -19,8 +19,7 @@ class YOLO11(torch.nn.Module):
         self.model = model.model
 
     def forward(self, x):
-        '''https://github.com/ultralytics/ultralytics/blob/main/ultralytics/nn/tasks.py#L216
-        '''
+        None
         pred: torch.Tensor = self.model(x)[0] # n 84 8400,
         pred = pred.permute(0, 2, 1)
         boxes, scores = pred.split([4, 80], dim=-1)

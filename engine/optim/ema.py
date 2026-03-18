@@ -13,15 +13,7 @@ __all__ = ['ModelEMA']
 
 @register()
 class ModelEMA(object):
-    """
-    Model Exponential Moving Average from https://github.com/rwightman/pytorch-image-models
-    Keep a moving average of everything in the model state_dict (parameters and buffers).
-    This is intended to allow functionality like
-    https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage
-    A smoothed version of the weights is necessary for some training schemes to perform well.
-    This class is sensitive where it is initialized in the sequence of model init,
-    GPU assignment and distributed training wrappers.
-    """
+    None
     def __init__(self, model: nn.Module, decay: float=0.9999, warmups: int=1000, start: int=0):
         super().__init__()
 

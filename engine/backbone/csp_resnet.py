@@ -12,10 +12,10 @@ __all__ = ['CSPResNet']
 
 
 donwload_url = {
-    's': 'https://github.com/lyuwenyu/storage/releases/download/v0.1/CSPResNetb_s_pretrained_from_paddle.pth',
-    'm': 'https://github.com/lyuwenyu/storage/releases/download/v0.1/CSPResNetb_m_pretrained_from_paddle.pth',
-    'l': 'https://github.com/lyuwenyu/storage/releases/download/v0.1/CSPResNetb_l_pretrained_from_paddle.pth',
-    'x': 'https://github.com/lyuwenyu/storage/releases/download/v0.1/CSPResNetb_x_pretrained_from_paddle.pth',
+    's': None,
+    'm': None,
+    'l': None,
+    'x': None,
 }
 
 
