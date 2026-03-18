@@ -1,9 +1,3 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-Mostly copy-paste from https://github.com/pytorch/vision/blob/13b35ff/references/detection/coco_utils.py
-
-Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-"""
 
 import torch
 import torch.utils.data

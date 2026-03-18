@@ -1,8 +1,3 @@
-"""
-Copied from RT-DETR (https://github.com/lyuwenyu/RT-DETR)
-Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-"""
-
 import torch
 import torchvision
 from torch import Tensor
@@ -15,7 +10,6 @@ def generalized_box_iou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     return torchvision.ops.generalized_box_iou(boxes1, boxes2)
 
 
-# elementwise
 def elementwise_box_iou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     """
     Args:
@@ -25,8 +19,8 @@ def elementwise_box_iou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
         iou, [N, ]
         union, [N, ]
     """
-    area1 = torchvision.ops.box_area(boxes1) # [N, ]
-    area2 = torchvision.ops.box_area(boxes2) # [N, ]
+    area1 = torchvision.ops.box_area(boxes1)
+    area2 = torchvision.ops.box_area(boxes2)
     lt = torch.max(boxes1[:, :2], boxes2[:, :2])  # [N, 2]
     rb = torch.min(boxes1[:, 2:], boxes2[:, 2:])  # [N, 2]
     wh = (rb - lt).clamp(min=0)  # [N, 2]
@@ -47,8 +41,8 @@ def elementwise_generalized_box_iou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     assert (boxes1[:, 2:] >= boxes1[:, :2]).all()
     assert (boxes2[:, 2:] >= boxes2[:, :2]).all()
     iou, union = elementwise_box_iou(boxes1, boxes2)
-    lt = torch.min(boxes1[:, :2], boxes2[:, :2]) # [N, 2]
-    rb = torch.max(boxes1[:, 2:], boxes2[:, 2:]) # [N, 2]
+    lt = torch.min(boxes1[:, :2], boxes2[:, :2])
+    rb = torch.max(boxes1[:, 2:], boxes2[:, 2:])
     wh = (rb - lt).clamp(min=0)  # [N, 2]
     area = wh[:, 0] * wh[:, 1]
     return iou - (area - union) / area

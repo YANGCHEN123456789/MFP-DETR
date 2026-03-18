@@ -1,14 +1,3 @@
-"""
-DEIMv2: Real-Time Object Detection Meets DINOv3
-Copyright (c) 2025 The DEIMv2 Authors. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from D-FINE (https://github.com/Peterande/D-FINEr)
-
-reference
-- https://github.com/PaddlePaddle/PaddleDetection/blob/develop/ppdet/modeling/backbones/hgnet_v2.py
-
-Copyright (c) 2024 The D-FINE Authors. All Rights Reserved.
-"""
 
 import torch
 import torch.nn as nn
@@ -590,11 +579,9 @@ class HGNetv2(nn.Module):
     @staticmethod
     def load_partial_state_dict(model, state_dict):
         model_dict = model.state_dict()
-        # 只保留shape完全一致的参数
         filtered_dict = {k: v for k, v in state_dict.items()
                         if k in model_dict and v.shape == model_dict[k].shape}
 
-        # 更新模型参数
         model_dict.update(filtered_dict)
         model.load_state_dict(model_dict, strict=False)
         missing = set(model_dict.keys()) - set(filtered_dict.keys())

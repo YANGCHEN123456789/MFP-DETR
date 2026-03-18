@@ -1,10 +1,3 @@
-"""
-reference
-- https://github.com/pytorch/vision/blob/main/references/detection/utils.py
-- https://github.com/facebookresearch/detr/blob/master/util/misc.py#L406
-
-Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-"""
 
 import os
 import time

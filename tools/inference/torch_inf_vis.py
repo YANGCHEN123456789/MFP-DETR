@@ -1,11 +1,3 @@
-"""
-DEIMv2: Real-Time Object Detection Meets DINOv3
-Copyright (c) 2025 yangchen. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from DINOv3 (https://github.com/facebookresearch/dinov3)
-Author: yangchen
-License: DINOv3 License Agreement
-"""
 
 import os
 import random
@@ -26,33 +18,27 @@ label_map = {
 0: 'dx_sg', 1: 'dx_dg', 2: 'yw'
 }
 
-# 自动生成颜色（使用 matplotlib 的配色方案）
-COLORS = plt.cm.tab20.colors  # 使用 20 种独特颜色，适合 CVPR 论文
+COLORS = plt.cm.tab20.colors
 COLOR_MAP = {label: tuple([int(c * 255) for c in COLORS[i % len(COLORS)]]) for i, label in enumerate(label_map)}
 
 
-# 绘制函数
 def draw(image, labels, boxes, scores, thrh=0.7):
     draw = ImageDraw.Draw(image)
-    font = ImageFont.load_default()  # 可替换为更高质量的字体文件路径
+    font = ImageFont.load_default()
     labels, boxes, scores = labels[scores > thrh], boxes[scores > thrh], scores[scores > thrh]
 
     for j, box in enumerate(boxes):
         category = labels[j].item()
-        color = COLOR_MAP.get(category, (255, 255, 255))  # 默认白色
+        color = COLOR_MAP.get(category, (255, 255, 255))
         box = list(map(int, box))
 
-        # 画边框
         draw.rectangle(box, outline=color, width=10)
 
-        # 添加标签和置信度
         text = f"{label_map[category]} {scores[j].item():.2f}"
-        text_bbox = draw.textbbox((0, 0), text, font=font)  # 获取文本边界框
+        text_bbox = draw.textbbox((0, 0), text, font=font)
         text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1]
-        # 添加文本背景
         text_background = [box[0], box[1] - text_height - 2, box[0] + text_width + 4, box[1]]
         draw.rectangle(text_background, fill=color)
-        # 绘制文本
         draw.text((box[0] + 2, box[1] - text_height - 2), text, fill="black", font=font)
 
     return image
@@ -141,12 +127,10 @@ def process_dataset(model, dataset_path, output_path, thrh=0.7, size=(640, 640))
         w, h = im_pil.size
         orig_size = torch.tensor([[w, h]]).cuda()
 
-        # 图像预处理
         im_data = transforms(im_pil).unsqueeze(0).cuda()
         output = model(im_data, orig_size)
         labels, boxes, scores = output[0]['labels'], output[0]['boxes'], output[0]['scores']
 
-        # 绘制结果
         vis_image = draw(im_pil.copy(), labels, boxes, scores, thrh)
         save_path = os.path.join(output_path, f"vis_{os.path.basename(file_path)}")
         vis_image.save(save_path)

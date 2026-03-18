@@ -1,8 +1,3 @@
-"""
-https://github.com/pytorch/vision/blob/main/torchvision/models/_utils.py
-
-Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-"""
 
 from collections import OrderedDict
 from typing import Dict, List

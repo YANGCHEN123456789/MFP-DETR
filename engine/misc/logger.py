@@ -1,8 +1,3 @@
-"""
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-https://github.com/facebookresearch/detr/blob/main/util/misc.py
-Mostly copy-paste from torchvision references.
-"""
 
 import time
 import pickle

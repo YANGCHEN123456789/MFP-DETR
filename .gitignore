@@ -1,6 +1,5 @@
 # Ignored Files
 outputs/
-ckpts/
 testenv/
 backup
 
@@ -136,7 +135,6 @@ dmypy.json
 # PyCharm
 .idea
 .vscode/
-*.pt
 *.pth
 *.onnx
 *.zip

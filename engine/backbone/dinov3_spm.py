@@ -1,11 +1,3 @@
-"""
-MFP-DETR for Power Defect Detection
-Version: DEIM: DETR with Improved Matching for Fast Convergence
-Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
-Modified from DINOv3 (https://github.com/facebookresearch/dinov3)
-Author: yc
-License: DINOv3 License Agreement
-"""
 
 import math
 

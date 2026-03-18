@@ -1,7 +1,3 @@
-"""
-DEIM: DETR with Improved Matching for Fast Convergence
-Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
-"""
 
 import torch
 import torchvision.transforms.v2 as T

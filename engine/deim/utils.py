@@ -1,10 +1,3 @@
-"""
-DEIM: DETR with Improved Matching for Fast Convergence
-Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from D-FINE (https://github.com/Peterande/D-FINE)
-Copyright (c) 2023 . All Rights Reserved.
-"""
 
 import math
 from typing import List

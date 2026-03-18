@@ -1,100 +1,100 @@
 
 
-## 1. 环境配置 (Environment Setup)
+---
 
-MFP-DETR 建议使用 Python 3.11 及 PyTorch 2.0 以上版本。
+## 1. Environment Setup
+
+MFP-DETR is recommended to run with **Python 3.11** and **PyTorch 2.0+**.
 
 ```shell
-# 创建并激活环境
+# Create and activate the environment
 conda create -n mfp-detr python=3.11 -y
 conda activate mfp-detr
 
-# 安装依赖项
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ---
 
-## 2. 预训练权重准备 (Backbone Preparation)
+## 2. Backbone Preparation
 
-支持ViT多种骨干网络。请根据模型版本将下载好的权重放入 `./ckpts` 目录。
+Multiple ViT backbones are supported. Please place the downloaded pretrained weights into the `./ckpts` directory according to the selected model version.
 
-* **目录结构示例：**
+**Example directory structure:**
 
 ```text
 ckpts/
-├── vitt_distill.pt        # MFP-DETR-S 使用
-└── vittplus_distill.pt    # MFP-DETR-M 使用
+├── vitt_distill.pt        # for MFP-DETR-S
+└── vittplus_distill.pt    # for MFP-DETR-M
 ```
 
 ---
 
-## 3. 数据集准备 (Data Preparation)
+## 3. Data Preparation
 
-项目采用 **COCO 格式**。
+This project adopts the **COCO format** for dataset annotation.
+
+If you would like to use a public dataset, please refer to the **PTL-AI Furnas dataset**:
+
+If you use a custom power inspection dataset, please make sure to set `remap_mscoco_category=False`.
 
 
+1. **Modify the dataset configuration file:**
+   Edit `configs/dataset/custom_detection_furnas.yml`.
 
-如需使用公开数据集，可参考 **PTL-AI Furnas dataset**：
-- Dataset link: `https://github.com/freds0/PTL-AI_Furnas_Dataset`
+2. **Set the dataset paths:**
+   Specify your image folder (`img_folder`) and JSON annotation file (`ann_file`).
 
-如果使用电力巡检自定义数据集，请确保 `remap_mscoco_category` 设为 `False`。
-- Dataset link: `https://drive.google.com/drive/folders/1UkeR44yuiyzhPhW3nCOoRIqQCVsr9TXw?usp=drive_link`
-
-1. **修改配置文件：** 编辑 `configs/dataset/custom_detection_furnas.yml`。
-2. **设置路径：** 指向您的图片文件夹（img_folder）和 JSON 注释文件（ann_file）。
 ---
 
-## 4. 模型训练与微调 (Training & Tuning)
+## 4. Training & Fine-tuning
 
-根据您选择的配置文件，使用以下命令：
+Use the following commands according to the selected configuration file:
 
 ```shell
-# 以 ViT-S 版本为例启动分布式训练 (4卡)
+# Launch distributed training with 4 GPUs (ViT-S version as an example)
 CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --master_port=7777 --nproc_per_node=4 \
 train.py -c configs/mfp-detr/deim_dinov3_s_furnas.yml --use-amp --seed=0
 
-# 若要从 checkpoint 恢复或微调，添加 -t 参数
+# To resume training or fine-tune from a checkpoint, add the -t argument
 python train.py -c configs/mfp-detr/deim_dinov3_s_furnas.yml -t outputs/furnas/SPM-WFCE-Prototypes-S/best_stg1.pth
-
 ```
 
 ---
 
+## 5. Deployment
 
-## 5. 模型部署 (Deployment)
+It is recommended to first export the model to **ONNX** and then accelerate it with **TensorRT**.
 
-推荐导出至 ONNX 后通过 TensorRT 加速。
-
-1. **导出 ONNX：**
+### 5.1 Export to ONNX
 
 ```shell
 python tools/deployment/export_onnx.py --check \
   -c configs/mfp-detr/deim_dinov3_s_furnas.yml \
   -r outputs/furnas/SPM-WFCE-Prototypes-S/best_stg1.pth
-
 ```
 
-2. **TensorRT 转换 (推荐版本 ≥ 10.6)：**
+### 5.2 Convert with TensorRT (Recommended version >= 10.6)
 
 ```shell
-# 建议使用 fp16 以获得电力巡检所需的实时性
+# FP16 is recommended to achieve real-time performance for power inspection
 trtexec --onnx="model.onnx" --saveEngine="model.engine" --fp16
-
 ```
 
-## 6. 推理与可视化 (Inference & Vis)
+---
 
-### 6.1 安装推理依赖
+## 6. Inference & Visualization
+
+### 6.1 Install inference dependencies
 
 ```shell
 pip install -r tools/inference/requirements.txt
-
 ```
 
-### 6.2 PyTorch 模型推理
+### 6.2 PyTorch inference
 
-适用于验证模型训练效果：
+This is suitable for validating the performance of the trained PyTorch model:
 
 ```shell
 python tools/inference/torch_inf.py \
@@ -102,32 +102,28 @@ python tools/inference/torch_inf.py \
   -r outputs/furnas/SPM-WFCE-Prototypes-S/best_stg1.pth \
   --input test_image.jpg \
   --device cuda:0
-
 ```
 
-### 6.3 ONNX 模型推理
+### 6.3 ONNX inference
 
-在执行导出操作（见第 6 节）后，可以使用 ONNX Runtime 进行推理：
+After exporting the model to ONNX (see Section 5), you can run inference with ONNX Runtime:
 
 ```shell
 python tools/inference/onnx_inf.py \
   --onnx model.onnx \
   --input test_image.jpg
-
 ```
 
-### 6.4 TensorRT 模型推理
+### 6.4 TensorRT inference
 
-在生成 `.engine` 文件后，进行极速推理：
+After generating the `.engine` file, you can perform high-speed inference with TensorRT:
 
 ```shell
 python tools/inference/trt_inf.py \
   --trt model.engine \
   --input test_image.jpg
-
 ```
+
 ---
-
-
 
 

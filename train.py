@@ -1,10 +1,3 @@
-"""
-MFP-DETR for Power Defect Detection
-# Copyright (c) 2026 yc. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from DINOv3 (https://github.com/facebookresearch/dinov3)
-License: DINOv3 License Agreement
-"""
 import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))

@@ -130,11 +130,11 @@ def get_dataloader(image_dict, annotations_dict, categories, image_dir, augmenta
     return dataset
 
 
-def main(model='vitl14', coco_json='/input/yangchen/torch_learn/project/yc_graduate/DEIMv2/datasets/quexian17_all/annotations/instances_train2017_fixed.json', image_dir='/input/yangchen/torch_learn/project/yc_graduate/DEIMv2/datasets/quexian17_all/images/train2017', 
+def main(model='vits14', coco_json='None', image_dir='None', 
          use_bbox='yes', epochs=1, device=0, n_clst=5, augmentations=None, out_dir=None):
     use_bbox = use_bbox == 'yes'
 
-    model = torch.hub.load('/input/yangchen/torch_learn/project/Learn/dinov2', 'dinov2_vits14', trust_repo=True, source='local').to(device)
+    model = torch.hub.load(None, None, trust_repo=True, source='local').to(device)
 
     # Load COCO dataset
     image_dict, annotations_dict, categories = load_coco_data(coco_json, image_dir)

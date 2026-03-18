@@ -1,8 +1,3 @@
-"""
-Copied from RT-DETR (https://github.com/lyuwenyu/RT-DETR)
-Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-"""
-
 
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler

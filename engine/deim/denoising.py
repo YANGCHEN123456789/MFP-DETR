@@ -1,6 +1,3 @@
-"""Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-Modifications Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
-"""
 
 import torch
 

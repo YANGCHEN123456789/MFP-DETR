@@ -1,12 +1,3 @@
-"""
-MFP-DETR for Power Defect Detection
-Version: DEIM: DETR with Improved Matching for Fast Convergence
-Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from D-FINE (https://github.com/Peterande/D-FINE/)
-Author: yc
-Copyright (c) 2024 D-FINE Authors. All Rights Reserved.
-"""
 
 import math
 import copy
@@ -34,7 +25,7 @@ from torch.nn import functional as F
 import pickle
 
 
-prototypes_path = '/input/yangchen/torch_learn/project/yc_graduate/DEIMv2/prototypes/fs_biandian_17.vits14.bbox.p10.sk_50.pkl'
+prototypes_path = '../prototypes/fs_biandian_17.vits14.bbox.p10.sk_50.pkl'
 prototypes_data = torch.load(prototypes_path)
 prototypes = prototypes_data['prototypes']  
 
@@ -278,10 +269,10 @@ class DEIMTransformer(nn.Module):
                  use_gateway=True,
                  share_bbox_head=False,
                  share_score_head=False,
-                 class_prototypes=class_prototypes,  # 新增：类原型特征（原始384维）
-                 prototype_embed_dim=384,  # 新增：原型特征维度
-                 prototype_attention_heads=8,  # 新增：原型注意力头数
-                 prototype_topk=5,  # 新增：每个原型选择的topk特征
+                 class_prototypes=class_prototypes,
+                 prototype_embed_dim=384,
+                 prototype_attention_heads=8,
+                 prototype_topk=5,
                  ):
         super().__init__()
         assert len(feat_channels) <= num_levels
@@ -315,29 +306,23 @@ class DEIMTransformer(nn.Module):
         print(f"     --- Use Share Bbox Head@{share_bbox_head} ---")
         print(f"     --- Use Share Score Head@{share_score_head} ---")
         
-        # 新增：原型引导相关参数
         self.use_prototype_guidance = class_prototypes is not None
         #print(self.use_prototype_guidance)
         if self.use_prototype_guidance:
             print(f"     --- Use Prototype Guidance@{self.use_prototype_guidance} ---")
             print(f"     --- Prototype TopK@{self.prototype_topk} ---")
             
-            # 1. 原型特征投影层（将384维原型投影到hidden_dim维）
             self.prototype_proj = nn.Linear(prototype_embed_dim, hidden_dim)
             
-            # 2. 注册【原始原型特征】作为buffer（叶子节点，支持深拷贝）
-            # 注意：这里直接注册用户传入的class_prototypes，不做任何计算
             self.register_buffer(
                 'raw_class_prototypes', 
-                class_prototypes.detach().clone()  # 确保是叶子节点且不影响原始数据
+                class_prototypes.detach().clone()
             )
             
-            # 3. 原型交叉注意力层
             self.prototype_attention = nn.MultiheadAttention(
                 hidden_dim, prototype_attention_heads, dropout=dropout, batch_first=True
             )
             
-            # 4. 原型特征融合层
             self.prototype_fusion = nn.Sequential(
                 nn.Linear(hidden_dim * 2, hidden_dim),
                 nn.LayerNorm(hidden_dim),
@@ -345,7 +330,6 @@ class DEIMTransformer(nn.Module):
                 nn.Dropout(dropout)
             )
             
-            # 5. 可学习的权重参数
             # self.prototype_similarity_weight = nn.Parameter(torch.ones(1))
             # self.prototype_selection_weight = nn.Parameter(torch.ones(1))
             self.prototype_similarity_weight = nn.Parameter(torch.tensor([0.1]))
@@ -442,13 +426,11 @@ class DEIMTransformer(nn.Module):
             if in_channels != self.hidden_dim:
                 init.xavier_uniform_(m[0].weight)
                 
-        # 新增：初始化原型投影层
         if self.use_prototype_guidance:
             init.xavier_uniform_(self.prototype_proj.weight)
             if self.prototype_proj.bias is not None:
                 init.constant_(self.prototype_proj.bias, 0)
                 
-            # 初始化原型融合层
             for layer in self.prototype_fusion:
                 if isinstance(layer, nn.Linear):
                     init.xavier_uniform_(layer.weight)
@@ -485,7 +467,6 @@ class DEIMTransformer(nn.Module):
     def _get_projected_prototypes(self, batch_size):
         """动态计算投影后的原型特征（避免注册中间张量）"""
         # raw_class_prototypes: [num_classes, 384]
-        # 投影到hidden_dim维，并扩展到batch维度
         projected = self.prototype_proj(self.raw_class_prototypes)  # [num_classes, hidden_dim]
         return projected.unsqueeze(0).repeat(batch_size, 1, 1)  # [B, num_classes, hidden_dim]
 
@@ -513,14 +494,11 @@ class DEIMTransformer(nn.Module):
         # [b, l, c]
         feat_flatten = torch.concat(feat_flatten, 1)
         
-        # 新增：原型引导的特征增强
         if self.use_prototype_guidance and self.training:
             batch_size = feat_flatten.shape[0]
             
-            # 动态获取投影后的原型特征
             prototypes = self._get_projected_prototypes(batch_size)  # [B, C, D]
             
-            # 原型交叉注意力
             # feat_flatten: [B, N, D], prototypes: [B, C, D]
             attn_output, attn_weights = self.prototype_attention(
                 query=feat_flatten,
@@ -528,11 +506,8 @@ class DEIMTransformer(nn.Module):
                 value=prototypes
             )  # attn_output: [B, N, D], attn_weights: [B, N, C]
             
-            # 特征融合
             enhanced_feat = self.prototype_fusion(torch.cat([feat_flatten, attn_output], dim=-1))
             
-            #print(f"原型特征增强权重 (prototype_similarity_weight): {self.prototype_similarity_weight}")
-            # 残差连接
             feat_flatten = feat_flatten + self.prototype_similarity_weight * enhanced_feat
 
         return feat_flatten, spatial_shapes
@@ -570,11 +545,9 @@ class DEIMTransformer(nn.Module):
         batch_size, num_feats, dim = memory.shape
         num_prototypes = prototypes.shape[1]
         
-        # 归一化
         memory_norm = F.normalize(memory, p=2, dim=-1)
         prototypes_norm = F.normalize(prototypes, p=2, dim=-1)
         
-        # 计算余弦相似度 [B, N, C]
         similarity = torch.matmul(memory_norm, prototypes_norm.transpose(1, 2))
         
         return similarity
@@ -583,7 +556,6 @@ class DEIMTransformer(nn.Module):
         """结合原型相似度的TopK选择"""
         batch_size, num_feats, _ = memory.shape
         
-        # 原始的分类分数
         if self.query_select_method == 'default':
             class_scores = outputs_logits.max(-1).values  # [B, N]
         elif self.query_select_method == 'one2many':
@@ -591,26 +563,19 @@ class DEIMTransformer(nn.Module):
         elif self.query_select_method == 'agnostic':
             class_scores = outputs_logits.squeeze(-1)  # [B, N]
         
-        # 动态获取投影后的原型特征
         prototypes = self._get_projected_prototypes(batch_size)  # [B, C, D]
         
-        # 计算原型相似度分数
         prototype_similarity = self._compute_prototype_similarity(memory, prototypes)  # [B, N, C]
         
-        # 每个特征的最大原型相似度
         max_prototype_similarity = prototype_similarity.max(-1).values  # [B, N]
 
-        #print(f"原型特征增强权重 (prototype_selection_weight): {self.prototype_selection_weight}")
-        # 融合分数
         combined_scores = (
             class_scores + 
             self.prototype_selection_weight * max_prototype_similarity
         )
         
-        # 选择TopK
         _, topk_ind = torch.topk(combined_scores, topk, dim=-1)  # [B, K]
         
-        # Gather结果
         topk_anchors = outputs_anchors_unact.gather(
             dim=1, 
             index=topk_ind.unsqueeze(-1).repeat(1, 1, outputs_anchors_unact.shape[-1])
@@ -626,12 +591,10 @@ class DEIMTransformer(nn.Module):
             index=topk_ind.unsqueeze(-1).repeat(1, 1, memory.shape[-1])
         )
         
-        # 同时返回每个选中Query对应的原型信息
         topk_prototype_similarity = max_prototype_similarity.gather(
             dim=1, index=topk_ind
         )  # [B, K]
         
-        # 找到每个选中Query最匹配的原型类别
         topk_prototype_ind = prototype_similarity.gather(
             dim=1, index=topk_ind.unsqueeze(-1).repeat(1, 1, prototype_similarity.shape[-1])
         ).argmax(-1)  # [B, K]
@@ -658,27 +621,21 @@ class DEIMTransformer(nn.Module):
 
         enc_outputs_logits :torch.Tensor = self.enc_score_head(memory)
 
-        # 新增：使用原型引导的TopK选择
         if self.use_prototype_guidance:
             enc_topk_memory, enc_topk_logits, enc_topk_anchors, topk_prototype_ind, topk_prototype_similarity = \
                 self._select_topk_with_prototypes(memory, enc_outputs_logits, anchors, self.num_queries)
             
-            # 增强Query内容：融入最匹配的原型特征
             batch_size = enc_topk_memory.shape[0]
-            # 动态获取投影后的原型特征
             projected_prototypes = self._get_projected_prototypes(batch_size)  # [B, C, D]
-            # 提取每个选中Query最匹配的原型特征
             topk_prototypes = projected_prototypes.gather(
                 dim=1, 
                 index=topk_prototype_ind.unsqueeze(-1).repeat(1, 1, projected_prototypes.shape[-1])
             )  # [B, K, D]
             
-            # 加权融合
             similarity_weight = topk_prototype_similarity.unsqueeze(-1)  # [B, K, 1]
             enc_topk_memory = enc_topk_memory + similarity_weight * topk_prototypes
             
         else:
-            # 原始的TopK选择
             enc_topk_memory, enc_topk_logits, enc_topk_anchors = \
                 self._select_topk(memory, enc_outputs_logits, anchors, self.num_queries)
 

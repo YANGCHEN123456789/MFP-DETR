@@ -1,10 +1,3 @@
-"""
-DEIM: DETR with Improved Matching for Fast Convergence
-Copyright (c) 2024 The DEIM Authors. All Rights Reserved.
----------------------------------------------------------------------------------
-Modified from D-FINE (https://github.com/Peterande/D-FINE)
-Copyright (c) 2024 D-FINE authors. All Rights Reserved.
-"""
 
 import torch
 import torch.utils.data as data
@@ -125,7 +118,7 @@ class BatchImageCollateFunction(BaseCollateFunction):
         self.area_threshold, self.num_objects = area_threshold, num_objects
         self.data_vis, self.vis_save = data_vis, vis_save
         self.with_expand, self.expand_ratios, self.random_num_objects = with_expand, expand_ratios, random_num_objects
-        self.conflict_with_mixup = conflict_with_mixup  # 是否冲突
+        self.conflict_with_mixup = conflict_with_mixup
 
         if self.mixup_prob > 0 or self.copyblend_prob > 0:
             if os.path.isdir(self.vis_save):

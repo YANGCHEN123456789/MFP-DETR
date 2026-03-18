@@ -1,7 +1,3 @@
-"""
-https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/lazy_loader.py
-"""
-
 
 import types
 import importlib

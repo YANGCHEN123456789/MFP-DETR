@@ -1,6 +1,3 @@
-"""
-Copyright (c) 2024 The D-FINE Authors. All Rights Reserved.
-"""
 
 import tensorrt as trt
 import pycuda.driver as cuda

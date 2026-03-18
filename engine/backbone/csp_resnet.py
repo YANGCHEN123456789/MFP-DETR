@@ -1,8 +1,3 @@
-"""
-https://github.com/PaddlePaddle/PaddleDetection/blob/release/2.6/ppdet/modeling/backbones/cspresnet.py
-
-Copyright(c) 2023 lyuwenyu. All Rights Reserved.
-"""
 
 import torch
 import torch.nn as nn
